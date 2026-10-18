@@ -519,6 +519,39 @@ Braintree, Adyen, Checkout.com, Square and PayPal). Carrying an agent signal on 
 
 "None documented" means the vendor's public docs, API reference and dispute guides were read and say nothing; it is not a claim that no such capability exists. UNKNOWN means the docs could not be read. Neither means NO.
 
+#### Sources
+
+Pages read on 2026-10-15 for the agent-signal and issuer-field columns (from the co-author's scorecard,
+https://gist.github.com/Flyingmiata-droid/5ead7a4bc777a8dfcbfb69e4bf89e385, which also quotes each page).
+Sources for the dispute-link column (read 2026-10-16) are listed where the same page was read; the rest are
+still to be added.
+
+1. **Stripe**: https://docs.stripe.com/api/payment_intents/object?api-version=2026-09-30.preview ;
+   https://docs.stripe.com/agentic-commerce/sellers/use-cases/retail ; https://docs.stripe.com/api/disputes/object
+2. **Braintree**: https://developer.paypal.com/agent-ready/agentic-commerce-protocol ;
+   https://developer.paypal.com/braintree/docs/reference/response/transaction ;
+   https://developer.paypal.com/braintree/docs/reference/response/dispute
+3. **Adyen**: https://docs.adyen.com/online-payments/agentic-commerce/merchant/agentic-cart-api-integration ;
+   https://docs.adyen.com/online-payments/agentic-commerce/merchant/google-agentic-commerce
+4. **Worldpay**: https://docs.worldpay.com/access/products/payments/enable-features/acp-delegate-token ;
+   https://docs.worldpay.com/access/products/sessions/openapi/delegate-payment/delegatepayment.md (disputes doc did not load)
+5. **Checkout.com**: https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-via-agentic-commerce/accept-a-payment-via-chatgpt ;
+   blog cited in the row: https://www.checkout.com/blog/how-checkout-is-thinking-about-agentic-commerce
+6. **Shopify Payments**: https://help.shopify.com/en/manual/online-sales-channels/agentic-storefronts ;
+   https://community.shopify.dev/t/ai-agent-initiated-orders-api/29140
+7. **Square**: https://developer.squareup.com/reference/square/objects/OrderSource ; https://squareup.com/us/en/ai/agentic-commerce
+8. **PayPal (wallet, Orders v2)**: https://developer.paypal.com/api/orders/v2/schema.json ; https://paypal.ai/agent-ready
+9. **Cybersource**: https://developer.cas.cybersource.com/docs/cybs/en-us/visa-agentic-platform/developer/all/rest/intelligent-commerce.html
+10. **Nuvei**: https://docs.nuvei.com/api/main/indexMain_v1_0.html ;
+    https://www.nuvei.com/posts/nuvei-completes-first-party-in-agent-payment-with-visa-unveils-merchant-led-agentic-payments-strategy
+11. **Fiserv Commerce Hub**: developer.fiserv.com and developer.cardpointe.com searched; Commerce Hub docs did not render.
+12. **Global Payments**: https://www.globalpayments.com/agentic-commerce (developer portal did not render)
+13. **Elavon Converge**: docs did not render.
+14. **Elavon Payment Gateway**: https://developer.elavon.com/products/elavon-payment-gateway/v1/api-reference (OpenAPI 2026-07-21)
+15. **NMI**: https://docs.nmi.com/docs/mcp (only agent-named item); no merchant-side page found
+16. **Authorize.net**: https://developer.authorize.net/api/reference/index.html
+17. **Helcim**: https://devdocs.helcim.com/reference/purchase
+
 ### What would close the gap (informative)
 1. A structured agent indicator in the network dispute evidence schema (for example alongside existing compelling-evidence
    data elements).
