@@ -489,8 +489,11 @@ evidence the merchant submits through its gateway. This appendix records, per ga
 receives an agent signal, (b) whether the dispute object links back to it, and (c) whether any documented field can
 carry it to the issuer.
 
-Finding at the time of writing: merchants can recover the agent signal in one lookup on two gateways, but **no
-gateway documents a structured way to put it in front of the issuer**.
+Finding at the time of writing: linking a dispute back to its payment is documented by six gateways (Stripe,
+Braintree, Adyen, Checkout.com, Square and PayPal). Carrying an agent signal on that payment is documented by two
+(Stripe and Braintree). Shopify Payments links a dispute only to the order, and Elavon only by network reference
+(ARN). So even where a merchant can find the disputed payment, it usually cannot show that an agent placed it, and
+**no gateway documents a structured way to put that fact in front of the issuer**.
 
 ### Mapping table
 
