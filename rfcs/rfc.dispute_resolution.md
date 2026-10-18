@@ -489,8 +489,8 @@ evidence the merchant submits through its gateway. This appendix records, per ga
 receives an agent signal, (b) whether the dispute object links back to it, and (c) whether any documented field can
 carry it to the issuer.
 
-Finding at the time of writing: linking a dispute back to its payment is documented by six gateways (Stripe,
-Braintree, Adyen, Checkout.com, Square and PayPal). Carrying an agent signal on that payment is documented by two
+Finding at the time of writing: linking a dispute back to its payment is documented by seven gateways (Stripe,
+Braintree, Adyen, Checkout.com, Square, PayPal and Nuvei). Carrying an agent signal on that payment is documented by two
 (Stripe and Braintree). Shopify Payments links a dispute only to the order, and Elavon only by network reference
 (ARN). So even where a merchant can find the disputed payment, it usually cannot show that an agent placed it, and
 **no gateway documents a structured way to put that fact in front of the issuer**.
@@ -508,7 +508,7 @@ Braintree, Adyen, Checkout.com, Square and PayPal). Carrying an agent signal on 
 | Square | none documented as a value; `OrderSource.name` exists, Dashboard groups AI assistant orders by source | Yes: `Dispute.disputed_payment.payment_id` | none documented in the pages read | | 2026-10-15; link 2026-10-16 |
 | PayPal (wallet, Orders v2) | none documented: no agent or facilitator field; `stored_credential.payment_initiator` is `CUSTOMER` or `MERCHANT` only | Yes: `disputed_transactions[].seller_transaction_id` | Wallet disputes are decided by PayPal, not an issuer; evidence goes to PayPal as files and notes, none structured for agents | mandate + receipt as file evidence | 2026-10-15; link 2026-10-16 |
 | Cybersource | agent-side API only; nothing merchant-side | Report only: Chargeback Report `RequestId`, `MerchantReferenceNumber` | none documented | | 2026-10-15; link 2026-10-16 |
-| Nuvei | none documented (TAP pilot announced, H2 2026 target) | Report only: Chargebacks Report `Transaction ID`; no chargeback notification documented | none documented | | 2026-10-15; link 2026-10-16 |
+| Nuvei | none documented (TAP pilot announced, H2 2026 target) | Yes: Chargeback DMN `TransactionDetails.TransactionId` | none documented | | 2026-10-15; link 2026-10-18 |
 | Fiserv Commerce Hub | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
 | Global Payments | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
 | Elavon Converge | UNKNOWN (docs not readable) | UNKNOWN | UNKNOWN | | 2026-10-15 |
@@ -523,8 +523,8 @@ Braintree, Adyen, Checkout.com, Square and PayPal). Carrying an agent signal on 
 
 Pages read on 2026-10-15 for the agent-signal and issuer-field columns (from the co-author's scorecard,
 https://gist.github.com/Flyingmiata-droid/5ead7a4bc777a8dfcbfb69e4bf89e385, which also quotes each page).
-Sources for the dispute-link column (read 2026-10-16) are listed where the same page was read; the rest are
-still to be added.
+Dispute-link pages were read on 2026-10-16 and 2026-10-18 (verified by @Flyingmiata-droid); Worldpay's disputes docs did
+not load.
 
 1. **Stripe**: https://docs.stripe.com/api/payment_intents/object?api-version=2026-09-30.preview ;
    https://docs.stripe.com/agentic-commerce/sellers/use-cases/retail ; https://docs.stripe.com/api/disputes/object
@@ -532,23 +532,33 @@ still to be added.
    https://developer.paypal.com/braintree/docs/reference/response/transaction ;
    https://developer.paypal.com/braintree/docs/reference/response/dispute
 3. **Adyen**: https://docs.adyen.com/online-payments/agentic-commerce/merchant/agentic-cart-api-integration ;
-   https://docs.adyen.com/online-payments/agentic-commerce/merchant/google-agentic-commerce
+   https://docs.adyen.com/online-payments/agentic-commerce/merchant/google-agentic-commerce ;
+   dispute link (`originalReference`): https://docs.adyen.com/risk-management/disputes-api/dispute-notifications
 4. **Worldpay**: https://docs.worldpay.com/access/products/payments/enable-features/acp-delegate-token ;
    https://docs.worldpay.com/access/products/sessions/openapi/delegate-payment/delegatepayment.md (disputes doc did not load)
 5. **Checkout.com**: https://www.checkout.com/docs/payments/accept-payments/accept-a-payment-via-agentic-commerce/accept-a-payment-via-chatgpt ;
+   dispute link: https://www.checkout.com/docs/payments/process-disputes/disputes-api ;
+   https://www.checkout.com/docs/developer-resources/webhooks/webhook-event-types/dispute_received ;
    blog cited in the row: https://www.checkout.com/blog/how-checkout-is-thinking-about-agentic-commerce
 6. **Shopify Payments**: https://help.shopify.com/en/manual/online-sales-channels/agentic-storefronts ;
-   https://community.shopify.dev/t/ai-agent-initiated-orders-api/29140
-7. **Square**: https://developer.squareup.com/reference/square/objects/OrderSource ; https://squareup.com/us/en/ai/agentic-commerce
-8. **PayPal (wallet, Orders v2)**: https://developer.paypal.com/api/orders/v2/schema.json ; https://paypal.ai/agent-ready
-9. **Cybersource**: https://developer.cas.cybersource.com/docs/cybs/en-us/visa-agentic-platform/developer/all/rest/intelligent-commerce.html
+   https://community.shopify.dev/t/ai-agent-initiated-orders-api/29140 ;
+   dispute link (order only): https://shopify.dev/docs/api/admin-graphql/latest/objects/ShopifyPaymentsDispute
+7. **Square**: https://developer.squareup.com/reference/square/objects/OrderSource ; https://squareup.com/us/en/ai/agentic-commerce ;
+   dispute link: https://developer.squareup.com/reference/square/objects/DisputedPayment
+8. **PayPal (wallet, Orders v2)**: https://developer.paypal.com/api/orders/v2/schema.json ; https://paypal.ai/agent-ready ;
+   dispute link: https://developer.paypal.com/api/customer-disputes/v1/schema.yaml
+9. **Cybersource**: https://developer.cas.cybersource.com/docs/cybs/en-us/visa-agentic-platform/developer/all/rest/intelligent-commerce.html ;
+   dispute link: https://developer.cybersource.com/library/documentation/dev_guides/reporting_and_reconciliation/Reporting_User/html/oxy_ex-1/topics/c_Fields_in_the_Chargeback_Report.html
 10. **Nuvei**: https://docs.nuvei.com/api/main/indexMain_v1_0.html ;
-    https://www.nuvei.com/posts/nuvei-completes-first-party-in-agent-payment-with-visa-unveils-merchant-led-agentic-payments-strategy
+    https://www.nuvei.com/posts/nuvei-completes-first-party-in-agent-payment-with-visa-unveils-merchant-led-agentic-payments-strategy ;
+    dispute link (Chargeback DMN, `TransactionDetails.TransactionId`): https://docs.nuvei.com/documentation/integration/webhooks/control-panel/ ;
+    https://docs.nuvei.com/documentation/control-panel-docs/risk/chargebacks-report/
 11. **Fiserv Commerce Hub**: developer.fiserv.com and developer.cardpointe.com searched; Commerce Hub docs did not render.
 12. **Global Payments**: https://www.globalpayments.com/agentic-commerce (developer portal did not render)
 13. **Elavon Converge**: docs did not render.
 14. **Elavon Payment Gateway**: https://developer.elavon.com/products/elavon-payment-gateway/v1/api-reference (OpenAPI 2026-07-21)
-15. **NMI**: https://docs.nmi.com/docs/mcp (only agent-named item); no merchant-side page found
+15. **NMI**: https://docs.nmi.com/docs/mcp (only agent-named item) ;
+    dispute link: https://docs.nmi.com/reference/chargeback-events
 16. **Authorize.net**: https://developer.authorize.net/api/reference/index.html
 17. **Helcim**: https://devdocs.helcim.com/reference/purchase
 
