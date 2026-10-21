@@ -136,11 +136,13 @@ of integer minor units with a `currency` (see Open Questions).
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `selected_provider` | string | Yes | `provider_id` the agent selects |
+| `approval_digest` | string | No | `approval_digest` of the user's approval of this cart (Section 4.4a), when the agent platform keeps one |
 
 ### 4.4 DisputeRecord
 
 Opened by either party at the provider. Every evidence field is **by reference**
-to an existing AP2 or ACP schema; this extension adds no new evidence type.
+to an existing AP2 or ACP schema, except `user_approval` (Section 4.4a), which
+binds what the user approved to the checkout.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -153,6 +155,7 @@ to an existing AP2 or ACP schema; this extension adds no new evidence type.
 | `payment_receipt` | object | Yes | AP2 payment receipt: `status`, `reference`, `iat`, `payment_id`, `psp_confirmation_id`, `network_confirmation_id` |
 | `order` | object | Yes | ACP Order: `id`, `status`, `line_items[]`, `fulfillments[]`, `adjustments[]`, `estimated_delivery` |
 | `user_instruction` | string | No | The user's instruction, retained by the agent platform |
+| `user_approval` | UserApproval | No | What the user approved, bound to the checkout by digest (Section 4.4a) |
 | `confirmed_cart` | object | No | What the agent confirmed |
 | `claim` | DisputeClaim | Yes | The claim |
 
@@ -163,6 +166,25 @@ The provider **MUST** verify `payment_mandate.transaction_id == checkout_hash`
 and that each receipt's `reference == checkout_hash` before accepting the
 dispute. A failed check is returned as `not_eligible: authorization_chain_broken`
 and the parties are directed to the network fraud process.
+
+### 4.4a UserApproval
+
+What the user approved, kept by the agent platform and bound to the checkout.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `items` | array | Yes | Approved items: `sku` (string), `variant` (string, optional), `quantity` (integer) |
+| `approved_at` | string (RFC 3339) | Yes | When the user approved |
+| `approval_digest` | string | Yes | Lowercase hex SHA-256 of the RFC 8785 (JCS) form of `{items, approved_at}` |
+
+The agent sends `approval_digest` on `CheckoutSessionCompleteRequest.dispute_resolution`
+(Section 4.3), so the merchant's record of the session holds it before any
+dispute exists. A provider **MUST** recompute the digest from `items` and
+`approved_at`, and **MUST** check it equals the `approval_digest` the merchant
+received on complete. Only a `user_approval` that passes both checks is
+evidence of what the user approved; otherwise it, like `user_instruction`, is a
+statement of the agent platform only. `user_approval` carries no customer
+details: product identifiers, quantities and a time.
 
 ### 4.5 DisputeDetermination
 
@@ -228,7 +250,7 @@ network rules or law give them outside this extension.
 
 Disputes inside an intact authorization chain: mandate scope (amount, payee,
 expiry, reuse), merchant performance (per ACP Order), intent fidelity (only when
-the platform retained the instruction). Fraud and unauthorized-mandate claims
+the platform retained the instruction or a `user_approval`). Fraud and unauthorized-mandate claims
 are out of scope and routed to the network.
 
 ### 7.2 Permitted considerations
@@ -257,7 +279,9 @@ Per line:
    unfulfilled share.
 4. Instruction/cart conflict: recorded as a finding against the agent platform;
    it does **not** reverse the merchant's charge (the merchant performed what the
-   agent confirmed).
+   agent confirmed). With a `user_approval` that passes Section 4.4a, a disputed
+   line whose `sku` or `variant` matches no approved item is that finding, decided
+   on the bound approval rather than on the platform's statement.
 5. Otherwise: **uphold**.
 
 ### 7.4a Evidence-pack verdicts (admissibility)
@@ -399,6 +423,7 @@ semantics. Clients without extension support ignore the new properties.
 - [ ] Declares `dispute_resolution` in `capabilities.extensions`
 - [ ] Sets `selected_provider` on complete when agreeing a provider
 - [ ] Retains `user_instruction` if intent-fidelity disputes are to be possible
+- [ ] Sends `approval_digest` on complete and retains the `user_approval` it covers, if approval/order disputes are to be decided on a bound approval
 
 **Provider**
 
@@ -454,6 +479,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
 - **2026-10-17**: Section 7.4a restated on verifier output fields; whole-file hash or pinned-key policy and self-asserted-key handling added (review in AP2#338).
 - **2026-10-17**: 7.4a: `key_unresolved` and `no_record` handling; work-acceptance record weighting (review in x402-foundation/tsc#4).
+- **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---
 

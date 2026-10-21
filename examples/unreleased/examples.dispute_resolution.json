@@ -40,6 +40,10 @@
   "dispute_resolution_request_object": {
     "selected_provider": "prov_example_neutral"
   },
+  "dispute_resolution_request_with_approval": {
+    "selected_provider": "prov_example_neutral",
+    "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+  },
   "dispute_record": {
     "dispute_id": "dsp_0001",
     "policy_version": "ATDRP-0.1",
@@ -83,6 +87,71 @@
       ],
       "ground": "performance",
       "statement": "The order was canceled by the merchant and no refund was issued."
+    }
+  },
+  "dispute_record_approval_mismatch": {
+    "dispute_id": "dsp_0002",
+    "policy_version": "ATDRP-0.1",
+    "claimant": "payer",
+    "checkout_hash": "h_7f3a",
+    "payment_mandate": {
+      "transaction_id": "h_7f3a",
+      "payee": "merchant_123",
+      "payment_amount": 330,
+      "iat": 1790000000,
+      "exp": 1790003600,
+      "execution_date": "2026-11-01"
+    },
+    "checkout_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1790000100,
+      "order_id": "ord_abc123"
+    },
+    "payment_receipt": {
+      "status": "success",
+      "reference": "h_7f3a",
+      "iat": 1790000200,
+      "payment_id": "pay_123",
+      "psp_confirmation_id": "psp_123",
+      "network_confirmation_id": "net_123"
+    },
+    "order": {
+      "id": "ord_abc123",
+      "status": "completed",
+      "line_items": [
+        {
+          "id": "line_item_123",
+          "item": {
+            "id": "TEE-01",
+            "variant": "black"
+          }
+        }
+      ],
+      "fulfillments": [
+        {
+          "status": "delivered"
+        }
+      ],
+      "adjustments": []
+    },
+    "claim": {
+      "line_ids": [
+        "line_item_123"
+      ],
+      "ground": "intent",
+      "statement": "The user approved the green variant; the black variant was ordered and delivered."
+    },
+    "user_approval": {
+      "items": [
+        {
+          "sku": "TEE-01",
+          "variant": "green",
+          "quantity": 1
+        }
+      ],
+      "approved_at": "2026-11-01T09:58:00Z",
+      "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
     }
   },
   "dispute_determination": {

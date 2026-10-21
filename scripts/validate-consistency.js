@@ -591,9 +591,9 @@ function validateExamples() {
           } else if (spec === 'dispute_resolution') {
             if (exampleName === 'dispute_resolution_object') {
               schemaRef = '#/$defs/DisputeResolution';
-            } else if (exampleName === 'dispute_resolution_request_object') {
+            } else if (exampleName.startsWith('dispute_resolution_request')) {
               schemaRef = '#/$defs/DisputeResolutionRequest';
-            } else if (exampleName === 'dispute_record') {
+            } else if (exampleName.startsWith('dispute_record')) {
               schemaRef = '#/$defs/DisputeRecord';
             } else if (exampleName === 'dispute_determination') {
               schemaRef = '#/$defs/DisputeDetermination';

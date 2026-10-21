@@ -2612,6 +2612,11 @@
         "selected_provider": {
           "type": "string",
           "description": "provider_id the agent selects for this session."
+        },
+        "approval_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Optional. approval_digest of the user's approval of this cart (UserApproval), when the agent platform keeps one."
         }
       },
       "required": [

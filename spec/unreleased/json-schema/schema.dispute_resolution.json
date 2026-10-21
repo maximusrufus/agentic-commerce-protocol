@@ -119,6 +119,68 @@
         "window_days": 120
       }
     },
+    "UserApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the user approved, kept by the agent platform and bound to the checkout by approval_digest.",
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "One approved item.",
+            "properties": {
+              "sku": {
+                "type": "string",
+                "description": "Product identifier the user approved."
+              },
+              "variant": {
+                "type": "string",
+                "description": "Optional. Variant the user approved (e.g. colour or size)."
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Quantity the user approved."
+              }
+            },
+            "required": [
+              "sku",
+              "quantity"
+            ]
+          },
+          "description": "Approved items."
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user approved (RFC 3339)."
+        },
+        "approval_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the RFC 8785 (JCS) form of {items, approved_at}."
+        }
+      },
+      "required": [
+        "items",
+        "approved_at",
+        "approval_digest"
+      ],
+      "example": {
+        "items": [
+          {
+            "sku": "TEE-01",
+            "variant": "green",
+            "quantity": 1
+          }
+        ],
+        "approved_at": "2026-11-01T09:58:00Z",
+        "approval_digest": "39daf6842a5b0cb74f53731d48b615ed4a8cb6c826d91c4899ce9f4004d0e358"
+      }
+    },
     "DisputeResolutionRequest": {
       "type": "object",
       "additionalProperties": false,
@@ -127,6 +189,11 @@
         "selected_provider": {
           "type": "string",
           "description": "provider_id the agent selects for this session."
+        },
+        "approval_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Optional. approval_digest of the user's approval of this cart (UserApproval), when the agent platform keeps one."
         }
       },
       "required": [
@@ -253,6 +320,10 @@
         "user_instruction": {
           "type": "string",
           "description": "Optional. The user's instruction, retained by the agent platform."
+        },
+        "user_approval": {
+          "$ref": "#/$defs/UserApproval",
+          "description": "Optional. What the user approved, bound to the checkout by approval_digest."
         },
         "confirmed_cart": {
           "type": "object",
