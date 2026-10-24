@@ -339,7 +339,11 @@ Provider policy requirements:
    record in it is true. Records written after the last anchor are unanchored
    and **MUST NOT** be the sole basis for a time-based ground. A party may
    anchor a ledger it does not disclose and later prove its contents against
-   the anchored digest.
+   the anchored digest. The anchor cadence sets how long records stay
+   unanchored, so a ledger-based pack **SHOULD** declare its maximum anchor
+   interval; the provider checks the observed gaps between consecutive anchors
+   against it and records any gap longer than declared as a finding against the
+   party that kept the ledger (interval suggested by nmatt1 in AP2#338).
 
 The determination **MUST** record the verifier output fields for each pack. A
 result that implies an unauthorized mandate routes the claim to the network
@@ -443,7 +447,7 @@ semantics. Clients without extension support ignore the new properties.
 **Provider**
 
 - [ ] Verifies the authorization chain before accepting a dispute (Section 4.4)
-- [ ] For a ledger-based pack, recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored (Section 7.4a, requirement 5)
+- [ ] For a ledger-based pack, recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored; checks observed anchor gaps against the declared maximum interval (Section 7.4a, requirement 5)
 - [ ] Applies the evidence-pack admissibility table of Section 7.4a
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
 - [ ] Meets Sections 7.7 to 7.10
@@ -495,6 +499,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
 - **2026-10-17**: Section 7.4a restated on verifier output fields; whole-file hash or pinned-key policy and self-asserted-key handling added (review in AP2#338).
 - **2026-10-17**: 7.4a: `key_unresolved` and `no_record` handling; work-acceptance record weighting (review in x402-foundation/tsc#4).
+- **2026-10-24**: Section 7.4a requirement 5: a ledger-based pack SHOULD declare its maximum anchor interval, and observed gaps longer than declared are a finding (from nmatt1 in AP2#338).
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
