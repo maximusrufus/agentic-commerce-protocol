@@ -347,7 +347,9 @@ Provider policy requirements:
    party that kept the ledger. A gap within the declaration but over a stricter
    provider ceiling is reported, not held against that party. The records in that window remain checkable but
    are reported as late-anchored. Where no interval is declared, the provider
-   reports the longest observed gap (interval suggested by nmatt1, provider
+   reports the longest observed gap and, if it has a policy ceiling, any gaps
+   over it, not held against the party that kept the ledger (interval suggested
+   by nmatt1, provider
    ceiling by giskard09, in AP2#338).
 
 The determination **MUST** record the verifier output fields for each pack. A
