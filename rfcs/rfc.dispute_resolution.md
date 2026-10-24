@@ -343,7 +343,9 @@ Provider policy requirements:
    unanchored, so a ledger-based pack **SHOULD** declare its maximum anchor
    interval; the provider checks the observed gaps between consecutive anchors
    against it and records any gap longer than declared as a finding against the
-   party that kept the ledger (interval suggested by nmatt1 in AP2#338).
+   party that kept the ledger. The records in that window remain checkable but
+   are reported as late-anchored. Where no interval is declared, the provider
+   reports the longest observed gap (interval suggested by nmatt1 in AP2#338).
 
 The determination **MUST** record the verifier output fields for each pack. A
 result that implies an unauthorized mandate routes the claim to the network
