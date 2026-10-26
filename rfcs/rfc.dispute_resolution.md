@@ -327,30 +327,39 @@ Provider policy requirements:
    is not the producer's, and no required criterion is `not-evaluated`.
 5. A pack built from a ledger (lifecycle records written over time) proves
    internal consistency, not when its records existed. Completeness within a
-   boundary (sequence fields, as in AP2#290) and an external time anchor for
-   the boundary are separate requirements and fail separately (raised in
-   AP2#338 by nmatt1 and Tetsurohhori). For the anchor, the pack carries the
-   anchored digest, the mechanism (`rfc3161` or `opentimestamps`), the proof
-   bytes, and where the anchored set can be recomputed. The provider
-   recomputes the digest and verifies the proof: an RFC 3161 token against
-   time-stamp authority roots the provider chooses, an OpenTimestamps proof
-   against a block header the provider obtains itself. An anchor attests that
-   the set existed no later than the anchor time; it does not attest that a
-   record in it is true. Records written after the last anchor are unanchored
-   and **MUST NOT** be the sole basis for a time-based ground. A party may
-   anchor a ledger it does not disclose and later prove its contents against
-   the anchored digest. The anchor cadence sets how long records stay
-   unanchored, so a ledger-based pack **SHOULD** declare its maximum anchor
-   interval; the provider checks the observed gaps between consecutive anchors
-   against the declared maximum, or against its own policy ceiling if that is
-   stricter, and records any gap longer than declared as a finding against the
-   party that kept the ledger. A gap within the declaration but over a stricter
-   provider ceiling is reported, not held against that party. The records in that window remain checkable but
-   are reported as late-anchored. Where no interval is declared, the provider
-   reports the longest observed gap and, if it has a policy ceiling, any gaps
-   over it, not held against the party that kept the ledger (interval suggested
-   by nmatt1, provider
-   ceiling by giskard09, in AP2#338).
+   boundary and an external time anchor for the boundary are separate
+   requirements and fail separately (raised in AP2#338 by nmatt1 and
+   Tetsurohhori). For completeness, the pack carries the boundary identifier,
+   the sequence fields of each record (as in AP2#290), and a close commitment
+   for the boundary: the head of the record chain and the record count. The
+   provider recomputes the head from the records presented and checks that
+   the count matches; a mismatch in either is a finding that records were
+   withheld or altered. The close commitment is part of the anchored set, so
+   committing again to a shorter set needs a new anchor with a later time. For the
+   anchor, the pack carries the anchored digest, the mechanism (`rfc3161` or
+   `opentimestamps`), the proof bytes, and where the anchored set can be
+   recomputed. The provider recomputes the digest and verifies the proof: an
+   RFC 3161 token against time-stamp authority roots the provider chooses, an
+   OpenTimestamps proof against a block header the provider obtains itself.
+   An anchor attests that the set existed no later than the anchor time; it
+   does not attest that a record in it is true. Records written after the
+   last anchor are unanchored and **MUST NOT** be the sole basis for a
+   time-based ground. A party may anchor a ledger it does not disclose and
+   later prove its contents against the anchored digest; producing the
+   anchored set at the dispute, so that the provider can recompute the
+   digest, satisfies "where the anchored set can be recomputed". The anchor
+   cadence sets how long records stay unanchored, so a ledger-based pack
+   **SHOULD** declare its maximum anchor interval; the provider checks the
+   observed gaps between consecutive anchors against the declared maximum,
+   or against its own policy ceiling if that is stricter, and records any gap
+   longer than declared as a finding against the party that kept the ledger.
+   A gap within the declaration but over a stricter provider ceiling is
+   reported, not held against that party. The records in that window remain
+   checkable but are reported as late-anchored. Where no interval is
+   declared, the provider reports the longest observed gap and, if it has a
+   policy ceiling, any gaps over it, not held against the party that kept the
+   ledger (interval suggested by nmatt1, provider ceiling by giskard09, in
+   AP2#338).
 
 The determination **MUST** record the verifier output fields for each pack. A
 result that implies an unauthorized mandate routes the claim to the network
@@ -454,7 +463,7 @@ semantics. Clients without extension support ignore the new properties.
 **Provider**
 
 - [ ] Verifies the authorization chain before accepting a dispute (Section 4.4)
-- [ ] For a ledger-based pack, recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored; checks observed anchor gaps against the declared maximum interval (Section 7.4a, requirement 5)
+- [ ] For a ledger-based pack, recomputes the boundary's close commitment (chain head and record count) from the records presented; recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored; checks observed anchor gaps against the declared maximum interval (Section 7.4a, requirement 5)
 - [ ] Applies the evidence-pack admissibility table of Section 7.4a
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
 - [ ] Meets Sections 7.7 to 7.10
@@ -506,6 +515,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-16**: Section 7.4a added: evidence-pack verifier verdicts mapped to admissibility (from AP2#338).
 - **2026-10-17**: Section 7.4a restated on verifier output fields; whole-file hash or pinned-key policy and self-asserted-key handling added (review in AP2#338).
 - **2026-10-17**: 7.4a: `key_unresolved` and `no_record` handling; work-acceptance record weighting (review in x402-foundation/tsc#4).
+- **2026-10-26**: Section 7.4a requirement 5: completeness is now checkable: the pack carries the boundary identifier, sequence fields and a close commitment (chain head and record count), which the provider recomputes; the close commitment is inside the anchored set; producing an undisclosed anchored set at the dispute satisfies the recompute requirement (from nmatt1 in #316).
 - **2026-10-24**: Section 7.4a requirement 5: a ledger-based pack SHOULD declare its maximum anchor interval, and observed gaps longer than declared are a finding (from nmatt1 in AP2#338); the provider may also apply a stricter policy ceiling of its own (from giskard09 in AP2#338).
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
