@@ -54,7 +54,7 @@
       "payee": "merchant_123",
       "payment_amount": 330,
       "iat": 1790000000,
-      "exp": 1790003600,
+      "exp": 1794096000,
       "execution_date": "2026-11-01"
     },
     "checkout_receipt": {
@@ -99,7 +99,7 @@
       "payee": "merchant_123",
       "payment_amount": 330,
       "iat": 1790000000,
-      "exp": 1790003600,
+      "exp": 1794096000,
       "execution_date": "2026-11-01"
     },
     "checkout_receipt": {
@@ -175,10 +175,16 @@
       "mandate_scope": {
         "finding": "within_mandate"
       },
+      "intent_fidelity": {
+        "finding": "instruction_not_retained"
+      },
       "merchant_performance": {
         "finding": "canceled_without_completed_adjustment"
       },
       "adjustments_already_made": {
+        "finding": "none"
+      },
+      "agent_platform_conduct": {
         "finding": "none"
       }
     },

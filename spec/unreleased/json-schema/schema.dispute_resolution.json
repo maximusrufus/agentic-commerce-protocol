@@ -464,7 +464,7 @@
             "intent_fidelity": {
               "type": "object",
               "additionalProperties": true,
-              "description": "Consideration: intent fidelity. Only when the platform retained the instruction."
+              "description": "Consideration: intent fidelity. Assessed only when the platform retained the instruction; otherwise the finding states that it was not retained."
             },
             "merchant_performance": {
               "type": "object",
@@ -481,7 +481,14 @@
               "additionalProperties": true,
               "description": "Consideration: agent platform conduct."
             }
-          }
+          },
+          "required": [
+            "mandate_scope",
+            "intent_fidelity",
+            "merchant_performance",
+            "adjustments_already_made",
+            "agent_platform_conduct"
+          ]
         },
         "prohibited_screened": {
           "type": "boolean",
@@ -594,8 +601,20 @@
           }
         ],
         "factors": {
+          "mandate_scope": {
+            "finding": "within_mandate"
+          },
+          "intent_fidelity": {
+            "finding": "instruction_not_retained"
+          },
           "merchant_performance": {
             "finding": "canceled_without_completed_adjustment"
+          },
+          "adjustments_already_made": {
+            "finding": "none"
+          },
+          "agent_platform_conduct": {
+            "finding": "none"
           }
         },
         "prohibited_screened": true,
