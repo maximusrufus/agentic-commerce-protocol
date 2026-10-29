@@ -194,6 +194,7 @@
       "name": "A. Neutral",
       "credential": "Provider-published arbitrator credential"
     },
+    "opened_at": "2026-11-12T09:00:00Z",
     "issued_at": "2026-11-20T15:00:00Z",
     "seal": {
       "record_hash": "sha256:ab12",

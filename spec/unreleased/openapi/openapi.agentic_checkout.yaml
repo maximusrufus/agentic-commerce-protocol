@@ -3101,7 +3101,7 @@ components:
             intent_fidelity:
               type: object
               additionalProperties: true
-              description: "Consideration: intent fidelity. Only when the platform retained the instruction."
+              description: "Consideration: intent fidelity. Assessed only when the platform retained the instruction; otherwise the finding states that it was not retained."
             merchant_performance:
               type: object
               additionalProperties: true
@@ -3114,6 +3114,12 @@ components:
               type: object
               additionalProperties: true
               description: "Consideration: agent platform conduct."
+          required:
+            - mandate_scope
+            - intent_fidelity
+            - merchant_performance
+            - adjustments_already_made
+            - agent_platform_conduct
         prohibited_screened:
           type: boolean
           description: True when the provider screened the submissions for prohibited considerations and excluded them.
@@ -3134,6 +3140,10 @@ components:
           required:
             - name
             - credential
+        opened_at:
+          type: string
+          description: RFC 3339 time the provider received the DisputeRecord. The dispute window is counted to its UTC date.
+          format: date-time
         issued_at:
           type: string
           description: RFC 3339 timestamp when the determination was issued.
@@ -3182,6 +3192,7 @@ components:
         - factors
         - prohibited_screened
         - signer
+        - opened_at
         - issued_at
         - seal
         - fee_disposition
@@ -3198,12 +3209,21 @@ components:
             reasons:
               - merchant_canceled_without_adjustment
         factors:
+          mandate_scope:
+            finding: within_mandate
+          intent_fidelity:
+            finding: instruction_not_retained
           merchant_performance:
             finding: canceled_without_completed_adjustment
+          adjustments_already_made:
+            finding: none
+          agent_platform_conduct:
+            finding: none
         prohibited_screened: true
         signer:
           name: A. Neutral
           credential: Provider-published arbitrator credential
+        opened_at: "2026-11-12T09:00:00Z"
         issued_at: "2026-11-20T15:00:00Z"
         seal:
           record_hash: sha256:ab12

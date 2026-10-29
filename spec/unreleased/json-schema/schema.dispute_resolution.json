@@ -517,6 +517,11 @@
             "credential"
           ]
         },
+        "opened_at": {
+          "type": "string",
+          "description": "RFC 3339 time the provider received the DisputeRecord. The dispute window is counted to its UTC date.",
+          "format": "date-time"
+        },
         "issued_at": {
           "type": "string",
           "description": "RFC 3339 timestamp when the determination was issued.",
@@ -579,6 +584,7 @@
         "factors",
         "prohibited_screened",
         "signer",
+        "opened_at",
         "issued_at",
         "seal",
         "fee_disposition"
@@ -622,6 +628,7 @@
           "name": "A. Neutral",
           "credential": "Provider-published arbitrator credential"
         },
+        "opened_at": "2026-11-12T09:00:00Z",
         "issued_at": "2026-11-20T15:00:00Z",
         "seal": {
           "record_hash": "sha256:ab12",

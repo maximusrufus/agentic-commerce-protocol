@@ -2019,10 +2019,16 @@
               "mandate_scope": {
                 "finding": "within_mandate"
               },
+              "intent_fidelity": {
+                "finding": "instruction_not_retained"
+              },
               "merchant_performance": {
                 "finding": "canceled_without_completed_adjustment"
               },
               "adjustments_already_made": {
+                "finding": "none"
+              },
+              "agent_platform_conduct": {
                 "finding": "none"
               }
             },
@@ -2032,6 +2038,7 @@
               "name": "A. Neutral",
               "credential": "Provider-published arbitrator credential"
             },
+            "opened_at": "2026-11-12T09:00:00Z",
             "issued_at": "2026-11-20T15:00:00Z",
             "seal": {
               "record_hash": "sha256:ab12",

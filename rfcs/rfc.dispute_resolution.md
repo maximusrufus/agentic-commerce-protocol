@@ -164,7 +164,8 @@ binds what the user approved to the checkout.
 
 The provider **MUST** verify `payment_mandate.transaction_id == checkout_hash`
 and that each receipt's `reference == checkout_hash` before accepting the
-dispute. A failed check is returned as `not_eligible: authorization_chain_broken`
+dispute. The comparisons are exact string equality, with no normalization of
+case or encoding. A failed check is returned as `not_eligible: authorization_chain_broken`
 and the parties are directed to the network fraud process.
 
 ### 4.4a UserApproval
@@ -201,6 +202,7 @@ type `dispute` (Section 6).
 | `prohibited_screened` | boolean | Yes | Provider screened for and excluded prohibited considerations |
 | `drafted_by` | string | No | Disclosure of AI assistance (Section 7.7) |
 | `signer` | object | Yes | `name`, `credential` of the named natural person |
+| `opened_at` | string (date-time) | Yes | RFC 3339 time the provider received the DisputeRecord |
 | `issued_at` | string (date-time) | Yes | RFC 3339 timestamp |
 | `seal` | object | Yes | `record_hash`, `chain_head`, `verify_url` |
 | `fee_disposition` | object | Yes | `paid_by` (`payer` or `merchant`), `amount` |
@@ -271,18 +273,29 @@ Per line:
 1. A completed refund or credit greater than or equal to the line amount:
    **uphold** (moot). A line-labelled adjustment counts in full; an order-level
    adjustment is allocated pro rata by line amount so one refund can never moot
-   more than one line's worth of exposure.
+   more than one line's worth of exposure. Only a completed adjustment of type
+   `refund`, `credit` or `price_adjustment` counts; other types (`return`,
+   `exchange`, `cancellation`, `dispute`, and unrecognized values) do not. An
+   adjustment that names no line is allocated pro rata by line amount over the
+   lines with a known amount.
 2. Charge greater than the mandate: **overturn** the excess. Execution after
-   `exp`, or mandate reuse: **overturn** the line.
+   `exp`, or mandate reuse: **overturn** the line. The charge is the order total,
+   compared with `payment_amount`. Execution is after `exp` when the UTC date of
+   `execution_date` is later than the UTC date of `exp`; the same day is not after.
 3. Merchant `canceled` without a completed adjustment: **overturn**. Unfulfilled
    units after the merchant's own `estimated_delivery`: **overturn** the
-   unfulfilled share.
+   unfulfilled share. Unfulfilled is `quantity.current` (else `quantity.ordered`)
+   minus `quantity.fulfilled`, assessed after the order's
+   `estimated_delivery.latest`; a fulfillment's own estimate does not extend it.
 4. Instruction/cart conflict: recorded as a finding against the agent platform;
    it does **not** reverse the merchant's charge (the merchant performed what the
    agent confirmed). With a `user_approval` that passes Section 4.4a, a disputed
    line whose `sku` or `variant` matches no approved item is that finding, decided
    on the bound approval rather than on the platform's statement.
 5. Otherwise: **uphold**.
+
+A line's amount is its `subtotal`; without one, `unit_price` times
+`quantity.ordered`.
 
 ### 7.4a Evidence-pack verdicts (admissibility)
 
@@ -370,6 +383,13 @@ under Section 7.1.
 Open within `window_days` (default 120) of `payment_receipt.iat`; eligibility
 (chain, window, receipt status) within 2; submissions within 5; signed
 determination within 10.
+
+Days are whole UTC calendar days, counted from the UTC date of
+`payment_receipt.iat` to the UTC date the provider received the record
+(`opened_at`, also returned with any `not_eligible` result). A
+receipt is eligible only when its `status` is `success`. A record whose disputed
+line has neither `subtotal` nor `unit_price` is ineligible:
+`not_eligible: line_amount_missing`.
 
 ### 7.6 Fee
 
@@ -506,6 +526,9 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 11. **Relation to network chargebacks.** The extension leaves legacy chargeback
     rights untouched but does not say how a pre-existing chargeback adjustment
     interacts with an open dispute beyond rule 7.4(1).
+12. **Mandate reuse.** Rule 7.4(2) overturns a line on mandate reuse, but a
+    DisputeRecord carries one payment receipt, so no field shows reuse. How a
+    provider establishes reuse (for example from the PSP) is not stated.
 
 ---
 
@@ -517,6 +540,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-17**: 7.4a: `key_unresolved` and `no_record` handling; work-acceptance record weighting (review in x402-foundation/tsc#4).
 - **2026-10-26**: Section 7.4a requirement 5: completeness is now checkable: the pack carries the boundary identifier, sequence fields and a close commitment (chain head and record count), which the provider recomputes; the close commitment is inside the anchored set; producing an undisclosed anchored set at the dispute satisfies the recompute requirement (from nmatt1 in #316).
 - **2026-10-29**: `DisputeDetermination.factors` requires all five considerations in the schema, as Section 4.5 states; in the example, the mandate expires after its execution date, so rule 3 decides the line (from Tetsurohhori in #316).
+- **2026-10-29**: Sections 4.4, 4.5, 7.4 and 7.5: readings stated for chain equality, receipt status, the dispute window and the new `opened_at`, line amount and the `line_amount_missing` eligibility code, adjustment types and allocation, expiry, charge and unfulfilled quantity; mandate reuse added as Open Question 12; the `DisputeDetermination` copies in the checkout schema and OpenAPI now match, including the five required `factors` (from Tetsurohhori's cold read in #316).
 - **2026-10-24**: Section 7.4a requirement 5: a ledger-based pack SHOULD declare its maximum anchor interval, and observed gaps longer than declared are a finding (from nmatt1 in AP2#338); the provider may also apply a stricter policy ceiling of its own (from giskard09 in AP2#338).
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
