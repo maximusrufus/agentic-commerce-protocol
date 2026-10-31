@@ -76,7 +76,8 @@
       "status": "canceled",
       "line_items": [
         {
-          "id": "line_item_123"
+          "id": "line_item_123",
+          "subtotal": 330
         }
       ],
       "adjustments": []
@@ -122,6 +123,7 @@
       "line_items": [
         {
           "id": "line_item_123",
+          "subtotal": 330,
           "item": {
             "id": "TEE-01",
             "variant": "black"

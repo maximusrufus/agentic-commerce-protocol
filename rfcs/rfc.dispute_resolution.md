@@ -282,9 +282,9 @@ Per line:
    `exp`, or mandate reuse: **overturn** the line. The charge is the order total,
    compared with `payment_amount`. Execution is after `exp` when the UTC date of
    `execution_date` is later than the UTC date of `exp`; the same day is not after.
-3. Merchant `canceled` without a completed adjustment: **overturn**. Unfulfilled
-   units after the merchant's own `estimated_delivery`: **overturn** the
-   unfulfilled share. Unfulfilled is `quantity.current` (else `quantity.ordered`)
+3. Merchant `canceled` without a completed adjustment of a type counted in rule 1:
+   **overturn**. Unfulfilled units after the merchant's own `estimated_delivery`:
+   **overturn** the unfulfilled share. Unfulfilled is `quantity.current` (else `quantity.ordered`)
    minus `quantity.fulfilled`, assessed after the order's
    `estimated_delivery.latest`; a fulfillment's own estimate does not extend it.
 4. Instruction/cart conflict: recorded as a finding against the agent platform;
