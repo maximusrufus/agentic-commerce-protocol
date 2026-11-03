@@ -373,6 +373,21 @@ Provider policy requirements:
    policy ceiling, any gaps over it, not held against the party that kept the
    ledger (interval suggested by nmatt1, provider ceiling by giskard09, in
    AP2#338).
+6. Where evidence includes a delivery receipt (a signed binding of request
+   and response digests, for example the `inam-delivery-receipt-v0.1` suite),
+   the provider recomputes the receipt identifier and verifies both
+   signatures over the RFC 8785 serialization of the signed content, rejecting
+   small-order public keys, and checks that the countersigning party named in
+   the receipt (`agent_a`) is the buyer in the dispute. A receipt countersigned
+   by the buyer, with both digests matching the request and response bytes
+   presented, weighs against a non-delivery or wrong-content claim. A receipt without the buyer's
+   countersignature decides nothing on its own. A receipt whose digests do not
+   match the presented bytes is not evidence that those bytes arrived. The
+   presented bytes are themselves evidence from the party that holds them, and
+   the provider records who presented them. A receipt shows which bytes
+   arrived, not whether they met the agreed criteria (requirement 4)
+   (raised in #304 by hheskihoran; test vectors in inamprotocol/inam-protocol
+   `interop/delivery`).
 
 The determination **MUST** record the verifier output fields for each pack. A
 result that implies an unauthorized mandate routes the claim to the network
@@ -485,6 +500,7 @@ semantics. Clients without extension support ignore the new properties.
 - [ ] Verifies the authorization chain before accepting a dispute (Section 4.4)
 - [ ] For a ledger-based pack, recomputes the boundary's close commitment (chain head and record count) from the records presented; recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored; checks observed anchor gaps against the declared maximum interval (Section 7.4a, requirement 5)
 - [ ] Applies the evidence-pack admissibility table of Section 7.4a
+- [ ] For a delivery receipt, recomputes the receipt identifier, verifies both signatures (rejecting small-order keys), checks that `agent_a` is the buyer in the dispute, checks both digests against the presented bytes, and records who presented them (Section 7.4a, requirement 6)
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
 - [ ] Meets Sections 7.7 to 7.10
 
@@ -543,6 +559,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-29**: Sections 4.4, 4.5, 7.4 and 7.5: readings stated for chain equality, receipt status, the dispute window and the new `opened_at`, line amount and the `line_amount_missing` eligibility code, adjustment types and allocation, expiry, charge and unfulfilled quantity; mandate reuse added as Open Question 12; the `DisputeDetermination` copies in the checkout schema and OpenAPI now match, including the five required `factors` (from Tetsurohhori's cold read in #316).
 - **2026-10-24**: Section 7.4a requirement 5: a ledger-based pack SHOULD declare its maximum anchor interval, and observed gaps longer than declared are a finding (from nmatt1 in AP2#338); the provider may also apply a stricter policy ceiling of its own (from giskard09 in AP2#338).
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
+- **2026-11-02**: Section 7.4a requirement 6: delivery receipts (signed request and response digests) weigh against a non-delivery or wrong-content claim only when countersigned by the buyer and matching the presented bytes; a seller-only receipt decides nothing; small-order keys are rejected (from hheskihoran in #304; vectors in inamprotocol/inam-protocol `interop/delivery`).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---
