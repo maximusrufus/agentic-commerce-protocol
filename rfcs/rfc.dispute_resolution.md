@@ -598,8 +598,10 @@ carry it to the issuer.
 
 Finding at the time of writing: linking a dispute back to its payment is documented by seven gateways (Stripe,
 Braintree, Adyen, Checkout.com, Square, PayPal and Nuvei). Carrying an agent signal on that payment is documented by two
-(Stripe and Braintree). Shopify Payments links a dispute only to the order, and Elavon only by network reference
-(ARN). So even where a merchant can find the disputed payment, it usually cannot show that an agent placed it, and
+(Stripe and Braintree); two more mark the payment as agent placed without naming the agent (Airwallex on the
+payment attempt, Getnet in a sandbox preview), and VGS marks the stored card in a beta. Airwallex's dispute carries
+`payment_intent_id` and `payment_attempt_id`. Shopify Payments links a dispute only to the order, and Elavon only by
+network reference (ARN). So even where a merchant can find the disputed payment, it usually cannot show that an agent placed it, and
 **no gateway documents a structured way to put that fact in front of the issuer**.
 
 ### Mapping table
@@ -623,6 +625,15 @@ Braintree, Adyen, Checkout.com, Square, PayPal and Nuvei). Carrying an agent sig
 | NMI | none documented | Unclear: `chargeback.batch.complete` webhook carries `chargebacks[].id`; docs do not say it is the original transaction ID | none documented | | 2026-10-15; link 2026-10-16 |
 | Authorize.net | none documented | none documented (only eCheck batch `chargebackCount`) | none documented | | 2026-10-15; link 2026-10-16 |
 | Helcim | none documented | none documented (chargebacks are dashboard only; no dispute API in devdocs) | none documented | | 2026-10-15; link 2026-10-16 |
+| Airwallex | `latest_payment_attempt.agentic_payment_data` (fulfillment outcome, "present only on payment attempts initiated via an agentic checkout flow"); names no agent | Yes: `payment_intent_id`, `payment_attempt_id` on the dispute | none documented (dispute object read; no agent field) | | 2026-11-21 |
+| Getnet | `agentic_protocol` (`NONE`, `MAP`, `CSIC`) on the MCP AI Toolkit card-checkout response; Developer Preview, sandbox only | not read for this column | none documented (Chargeback API read; no agent field or evidence type) | | 2026-11-21 |
+| Worldline | none documented (UCP handler beta maps the agent credential to standard network-token input) | not read for this column | none documented (dispute guide and Get/Submit Dispute read) | | 2026-11-21 |
+| Spreedly | none documented (agentic guide: merchant gets a standard vaulted token) | Claim only: forwarded claim carries `charge_id` | none documented | | 2026-11-21 |
+| Moneris | none documented (MCP preview serves the merchant's own agent) | not read for this column | none documented (Dispute Details read) | | 2026-11-21 |
+| dLocal | none documented | not read for this column | none documented (chargeback object and notification read) | | 2026-11-21 |
+| Antom | none documented (`agentCode`/`agentName` are IATA travel-agency fields) | not read for this column | none documented (`notifyDispute`, `supplyDefenseDocument` read) | | 2026-11-21 |
+| VGS | beta: `enriched_attributes.agentic_properties` (`agentic`, `minter`, `platform`, `tsp`) on the stored card, not the order | no dispute object | none documented | | 2026-11-21 |
+| Basis Theory | none documented for the merchant; no payment or transaction object | no dispute object ("disputes all happen afterwards on rails Basis Theory is not part of") | none documented | | 2026-11-21 |
 
 "None documented" means the vendor's public docs, API reference and dispute guides were read and say nothing; it is not a claim that no such capability exists. UNKNOWN means the docs could not be read. Neither means NO.
 
@@ -668,6 +679,19 @@ not load.
     dispute link: https://docs.nmi.com/reference/chargeback-events
 16. **Authorize.net**: https://developer.authorize.net/api/reference/index.html
 17. **Helcim**: https://devdocs.helcim.com/reference/purchase
+
+Rows 18-26 were added from the co-author's scorecard (https://github.com/Flyingmiata-droid/agent-order-record/blob/173f0ae1ea354c833927acf2241bc36a94614f82/SCORECARD.md),
+read 2026-11-21, after Visa's Agentic Ready release of 2026-11-17; each row there quotes its pages.
+
+18. **Airwallex**: https://www.airwallex.com/docs/api/payments/payment_intents/retrieve.md ; https://www.airwallex.com/docs/api/payments/payment_disputes/retrieve.md
+19. **Getnet**: https://docs.globalgetnet.com/en/global/products/agentic-commerce/mcp-ai-toolkit?doc=mcp-ai-toolkit-available-tools ; https://docs.globalgetnet.com/en/global/products/business-operations/chargeback
+20. **Worldline**: https://apireference.connect.worldline-solutions.com/s2sapi/v1/en_US/json/payments/create.html?paymentPlatform=ALL ; https://docs.connect.worldline-solutions.com/after-the-payment/chargeback-handling/dispute
+21. **Spreedly**: https://developer.spreedly.com/reference/purchase ; https://developer.spreedly.com/reference/forward-claim
+22. **Moneris**: https://developer.moneris.com/moneris-api/reference/createpayments-1 ; https://developer.moneris.com/moneris-api/reference/getdisputebycaseidandrecordnumber-1
+23. **dLocal**: https://docs.dlocal.com/reference/create-payment.md ; https://docs.dlocal.com/reference/retrieve-a-chargeback.md
+24. **Antom**: https://docs.antom.com/ac/ams/payment_cashier.md ; https://docs.antom.com/ac/ams/notify_dispute.md
+25. **VGS**: https://docs.verygoodsecurity.com/agentic-commerce/developer-resources/api-reference/card-on-file-matching-beta/card-attributes-agentic-properties
+26. **Basis Theory**: https://developers.basistheory.com/docs/guides/agentic/overview
 
 ### What would close the gap (informative)
 1. A structured agent indicator in the network dispute evidence schema (for example alongside existing compelling-evidence
