@@ -399,7 +399,10 @@ Provider policy requirements:
    that the placing call is in it. A hash mismatch is a finding that the
    record was altered. With `none`, no ground rests on an execution record;
    `none` is the presenting party's statement and is not `no_record`
-   (requirement 3). When the time of the commitment matters, it is shown by
+   (requirement 3). It is a claim to be checked, not a finding: the
+   determination records the `none` as presented and the provider's checked
+   outcome separately, and an execution record for the order produced by
+   either party is a finding against the `none`. When the time of the commitment matters, it is shown by
    an anchor under requirement 5; without one, the link is treated as written
    after the dispute opened.
    A link from the order to an execution record that was written after the
@@ -582,7 +585,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-11-02**: Section 7.4a requirement 6: delivery receipts (signed request and response digests) weigh against a non-delivery or wrong-content claim only when countersigned by the buyer and matching the presented bytes; a seller-only receipt decides nothing; small-order keys are rejected (from hheskihoran in #304; vectors in inamprotocol/inam-protocol `interop/delivery`).
 - **2026-11-22**: Section 7.4a: row for an anchor whose time-stamp authority signature was not verified under a provider-chosen certificate (attests no time, even when `valid: true`); requirement 1 names the certificate; field names follow the receipt's nested members; the determination records `tsa_cert_sha256` (ap2-evidence-pack 1.10.0; from robertolocatelli81-dev in #304).
-- **2026-11-22**: Section 7.4a requirement 7: order-placement evidence names its execution record by reference and committed hash, or `none`; a link written after the dispute opened weighs as the presenter's statement (from Flyingmiata-droid and zambodotdev in #304).
+- **2026-11-22**: Section 7.4a requirement 7: order-placement evidence names its execution record by reference and committed hash, or `none`; `none` is a claim checked and recorded separately from its outcome; a link written after the dispute opened weighs as the presenter's statement (from Flyingmiata-droid and zambodotdev in #304).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---
