@@ -308,10 +308,11 @@ conformance-vector names (the vector names in parentheses are examples only).
 | Verifier output | Admissibility | Effect on Section 7.4 |
 |---|---|---|
 | `valid: true` under the provider's policy (`valid_signed`) | Admissible | Apply 7.4 normally |
-| `digest_ok: false` (`digest_mismatch`), or `rfc3161_verified: false` / a failed `anchors` binding (`anchor_invalid`) | Not admissible (tamper) | The pack is excluded. The submitting party may resubmit within the 7.5 clock; the determination **MUST NOT** rely on the excluded pack |
-| `producer_present: false` (`stripped_signature`) | Admissible only for facts the mandate's own signature proves | Producer-level claims (who assembled the pack, retention integrity) carry no weight |
-| `producer_ok: true`, `producer_trusted: false` (`unpinned_producer`) | Consistency-only | It **MUST NOT** be the sole basis for an `overturn` |
-| `anchors_verified: 0` with `rfc3161_claimed: false` (`anchor_missing`) | Admissible | A time-based ground (execution after `exp`) needs an independent timestamp (PSP or network confirmation); otherwise that ground is not met |
+| `digest_ok: false` (`digest_mismatch`), or `rfc3161.verified: false` / a failed `anchors` binding (`anchor_invalid`) | Not admissible (tamper) | The pack is excluded. The submitting party may resubmit within the 7.5 clock; the determination **MUST NOT** rely on the excluded pack |
+| `producer_signatures.present: false` (`stripped_signature`) | Admissible only for facts the mandate's own signature proves | Producer-level claims (who assembled the pack, retention integrity) carry no weight |
+| `producer_signatures.ok: true`, `producer_signatures.trusted: false` (`unpinned_producer`) | Consistency-only | It **MUST NOT** be the sole basis for an `overturn` |
+| `anchors_verified: 0` with `rfc3161.claimed: false` (`anchor_missing`) | Admissible | A time-based ground (execution after `exp`) needs an independent timestamp (PSP or network confirmation); otherwise that ground is not met |
+| `states.time_anchor: not_evaluated` with a reason other than `not_present`, and no anchor counted under a time-stamp authority certificate (`anchors_verified: 0`, or no `tsa_cert_sha256` in the output) (`anchor_valid` read without, or with a non-matching, `--tsa-cert`) | Admissible | The anchor attests no time: an authentic and a self-issued token read the same here. A time-based ground needs `states.time_anchor: verified` under a time-stamp authority certificate the provider chooses, or an independent timestamp, as for `anchor_missing`. This applies even when `valid: true` |
 
 Provider policy requirements:
 
@@ -320,7 +321,10 @@ Provider policy requirements:
    from a stripped or re-signed copy. Providers **MUST** either record the
    SHA-256 of the whole pack file, or verify with pinned producer keys
    (`require_producer`) and, when a time-based ground rests on the pack's
-   anchor, `require_anchor` (or `min_anchors`).
+   anchor, `require_anchor` (or `min_anchors`) together with the certificate
+   of a time-stamp authority the provider chooses (`--tsa-cert`). Without that
+   certificate, `require_anchor` is met by the token's binding to the digest
+   alone, which a self-issued token also satisfies.
 2. When the verifier reports `self_asserted_only: true` (mandate keys carried
    in the pack itself), the mandate signature proves consistency, not issuer
    identity. Providers **MUST** match those keys against the issuer's published
@@ -389,7 +393,9 @@ Provider policy requirements:
    (raised in #304 by hheskihoran; test vectors in inamprotocol/inam-protocol
    `interop/delivery`).
 
-The determination **MUST** record the verifier output fields for each pack. A
+The determination **MUST** record the verifier output fields for each pack,
+including which time-stamp authority certificate the anchor was checked
+against (`tsa_cert_sha256`), or that none was given. A
 result that implies an unauthorized mandate routes the claim to the network
 under Section 7.1.
 
@@ -560,6 +566,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-24**: Section 7.4a requirement 5: a ledger-based pack SHOULD declare its maximum anchor interval, and observed gaps longer than declared are a finding (from nmatt1 in AP2#338); the provider may also apply a stricter policy ceiling of its own (from giskard09 in AP2#338).
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-11-02**: Section 7.4a requirement 6: delivery receipts (signed request and response digests) weigh against a non-delivery or wrong-content claim only when countersigned by the buyer and matching the presented bytes; a seller-only receipt decides nothing; small-order keys are rejected (from hheskihoran in #304; vectors in inamprotocol/inam-protocol `interop/delivery`).
+- **2026-11-22**: Section 7.4a: row for an anchor whose time-stamp authority signature was not verified under a provider-chosen certificate (attests no time, even when `valid: true`); requirement 1 names the certificate; field names follow the receipt's nested members; the determination records `tsa_cert_sha256` (ap2-evidence-pack 1.10.0; from robertolocatelli81-dev in #304).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---
