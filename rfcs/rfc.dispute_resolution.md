@@ -392,6 +392,16 @@ Provider policy requirements:
    arrived, not whether they met the agreed criteria (requirement 4)
    (raised in #304 by hheskihoran; test vectors in inamprotocol/inam-protocol
    `interop/delivery`).
+7. Evidence about how an agent placed the order names the execution record
+   that order resolves to: a reference to the record and the hash the record
+   committed to when the call ran, or an explicit `none` when no record
+   exists. The provider retrieves the record, recomputes the hash and checks
+   that the placing call is in it. A hash mismatch is a finding that the
+   record was altered. With `none`, no ground rests on an execution record.
+   A link from the order to an execution record that was written after the
+   dispute opened is a summary by the party presenting it and carries no
+   more weight than that party's own statement (raised in #304 by
+   Flyingmiata-droid and zambodotdev).
 
 The determination **MUST** record the verifier output fields for each pack,
 including which time-stamp authority certificate the anchor was checked
@@ -507,6 +517,7 @@ semantics. Clients without extension support ignore the new properties.
 - [ ] For a ledger-based pack, recomputes the boundary's close commitment (chain head and record count) from the records presented; recomputes the anchored digest and verifies the anchor proof; treats records after the last anchor as unanchored; checks observed anchor gaps against the declared maximum interval (Section 7.4a, requirement 5)
 - [ ] Applies the evidence-pack admissibility table of Section 7.4a
 - [ ] For a delivery receipt, recomputes the receipt identifier, verifies both signatures (rejecting small-order keys), checks that `agent_a` is the buyer in the dispute, checks both digests against the presented bytes, and records who presented them (Section 7.4a, requirement 6)
+- [ ] For order-placement evidence, resolves the named execution record, recomputes its committed hash and finds the placing call in it, or records `none` and rests no ground on an execution record (Section 7.4a, requirement 7)
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
 - [ ] Meets Sections 7.7 to 7.10
 
@@ -567,6 +578,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-10-23**: Section 7.4a requirement 5: a ledger-based pack names its time anchor (digest, mechanism, proof, where the anchored set is recomputed); records after the last anchor are unanchored; an anchor attests existence, not truth (from nmatt1 and Tetsurohhori in AP2#338).
 - **2026-11-02**: Section 7.4a requirement 6: delivery receipts (signed request and response digests) weigh against a non-delivery or wrong-content claim only when countersigned by the buyer and matching the presented bytes; a seller-only receipt decides nothing; small-order keys are rejected (from hheskihoran in #304; vectors in inamprotocol/inam-protocol `interop/delivery`).
 - **2026-11-22**: Section 7.4a: row for an anchor whose time-stamp authority signature was not verified under a provider-chosen certificate (attests no time, even when `valid: true`); requirement 1 names the certificate; field names follow the receipt's nested members; the determination records `tsa_cert_sha256` (ap2-evidence-pack 1.10.0; from robertolocatelli81-dev in #304).
+- **2026-11-22**: Section 7.4a requirement 7: order-placement evidence names its execution record by reference and committed hash, or `none`; a link written after the dispute opened weighs as the presenter's statement (from Flyingmiata-droid and zambodotdev in #304).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---
