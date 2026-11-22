@@ -397,7 +397,11 @@ Provider policy requirements:
    committed to when the call ran, or an explicit `none` when no record
    exists. The provider retrieves the record, recomputes the hash and checks
    that the placing call is in it. A hash mismatch is a finding that the
-   record was altered. With `none`, no ground rests on an execution record.
+   record was altered. With `none`, no ground rests on an execution record;
+   `none` is the presenting party's statement and is not `no_record`
+   (requirement 3). When the time of the commitment matters, it is shown by
+   an anchor under requirement 5; without one, the link is treated as written
+   after the dispute opened.
    A link from the order to an execution record that was written after the
    dispute opened is a summary by the party presenting it and carries no
    more weight than that party's own statement (raised in #304 by
