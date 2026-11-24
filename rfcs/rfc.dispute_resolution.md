@@ -207,6 +207,24 @@ type `dispute` (Section 6).
 | `seal` | object | Yes | `record_hash`, `chain_head`, `verify_url` |
 | `fee_disposition` | object | Yes | `paid_by` (`payer` or `merchant`), `amount` |
 
+### 4.6 DisputeSettlement
+
+Returned by the provider when both parties accept terms in the optional
+settlement stage (Section 5.4); recorded by the merchant as an `Order`
+adjustment of type `dispute` (Section 6). It records an agreement, not a
+finding: it has no `reasons`, no `factors` and no `seal`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `settlement_id` | string | Yes | Settlement identifier |
+| `dispute_id` | string | Yes | The dispute settled |
+| `per_line` | DisputeSettlementLine[] | Yes | `line_id`, `amount` (DisputeAmount) refunded to the payer, zero if none |
+| `terms` | string | No | Any other agreed terms, as accepted |
+| `fee_disposition` | object | Yes | `paid_by` (`payer`, `merchant` or `split`), `amount` (Section 7.6) |
+| `terms_digest` | string | Yes | `sha256:` and the lowercase hex SHA-256 of the RFC 8785 (JCS) serialization of the object with members `dispute_id`, `per_line`, `terms` (if present) and `fee_disposition` |
+| `accepted_by` | object[] | Yes | Exactly one entry for `payer` and one for `merchant`: `party`, `accepted_at` (RFC 3339), `terms_digest` (equal to the settlement's) |
+| `issued_at` | string (date-time) | Yes | RFC 3339 timestamp |
+
 ---
 
 ## 5. Operations
@@ -231,6 +249,33 @@ Either party opens a dispute at the agreed provider within `window_days` of
 `payment_receipt.iat` by submitting a DisputeRecord. The transport is not
 defined by this RFC (see Open Questions).
 
+### 5.4 Settlement before determination (optional)
+
+After a dispute is found eligible (Section 7.5), the provider **MAY** offer the
+parties a settlement stage on the same DisputeRecord and evidence. Either party
+**MAY** decline it. If both parties accept the same terms, the provider returns
+a DisputeSettlement (Section 4.6) and the dispute closes. If either party
+declines, or no terms are accepted within 10 days of `opened_at`, the dispute
+proceeds to a determination on the same record.
+
+The provider **MUST** authenticate each party's acceptance, and each acceptance
+names the `terms_digest` of the terms accepted (Section 4.6). A settlement,
+including one with zero amounts, exists only when both parties accepted the
+same digest. No line's settled amount may exceed that line's disputed amount.
+
+A settlement is not a determination. It records no finding on any
+consideration, and it **MUST NOT** be presented as a determination or as a
+finding in any other dispute. Sections 7.4, 7.7 and 7.9 apply to
+determinations, not settlements.
+
+Declining the stage, or declining terms, carries no adverse inference. A
+party's decline, the terms it offered or rejected, and any limits it gave the
+provider in confidence **MUST NOT** be disclosed to the signer of a later
+determination on the dispute or weighed in it. How the provider proposes terms (proposals,
+rounds, limits a party gives the provider in confidence) is outside this RFC,
+but terms the provider proposes **MUST NOT** rest on a prohibited
+consideration (Section 7.3).
+
 ---
 
 ## 6. Recording a Determination
@@ -240,6 +285,13 @@ defined by this RFC (see Open Questions).
 `type: "dispute"` and `status: "completed"` and the determination's
 `seal.verify_url`. This RFC adds the optional `dispute_determination` property
 to `Adjustment` to carry the determination (see Open Questions).
+
+A settlement (Section 5.4) is recorded the same way: its `per_line` amounts are
+refunded against `payment_receipt.payment_id`, and the `Adjustment` of type
+`dispute` carries the optional `dispute_settlement` property instead of
+`dispute_determination`. An `Adjustment` carries at most one of the two
+properties, and the property present shows whether the outcome was agreed or
+determined.
 
 A determination is final under the policy; either party retains whatever rights
 network rules or law give them outside this extension.
@@ -420,7 +472,10 @@ under Section 7.1.
 
 Open within `window_days` (default 120) of `payment_receipt.iat`; eligibility
 (chain, window, receipt status) within 2; submissions within 5; signed
-determination within 10.
+determination within 10. When a settlement stage (Section 5.4) runs, the
+submission and determination clocks start on the day it ends; the stage ends no
+later than 10 days after `opened_at`, and a dispute opened within
+`window_days` stays eligible however long the stage takes.
 
 Days are whole UTC calendar days, counted from the UTC date of
 `payment_receipt.iat` to the UTC date the provider received the record
@@ -433,7 +488,9 @@ line has neither `subtotal` nor `unit_price` is ineligible:
 
 Loser pays the provider's published per-resolution fee (single-line default
 range $1 to $50; batched $5 to $250), pre-funded by both sides through the
-platform or PSP and returned to the prevailing party.
+platform or PSP and returned to the prevailing party. A settlement has no
+losing party: it states the fee disposition the parties accepted
+(`fee_disposition`, Section 4.6).
 
 ### 7.7 Human sign-off
 
@@ -456,7 +513,8 @@ account, forever.
 ### 7.10 Transparency
 
 Providers **MUST** publish, at k-anonymity of at least 11: volume, median days
-to determination, uphold/overturn rates by ground, and fee schedule.
+to determination, uphold/overturn rates by ground, the share of disputes
+closed by settlement, and fee schedule.
 
 ---
 
@@ -481,7 +539,7 @@ No breaking changes. The extension is optional and inactive unless both sides
 declare it and a provider is agreed. `Order.adjustments` already admits type
 `dispute`. The new properties (`CheckoutSession.dispute_resolution`,
 `CheckoutSessionCompleteRequest.dispute_resolution`,
-`Adjustment.dispute_determination`) are optional; no existing field changes
+`Adjustment.dispute_determination`, `Adjustment.dispute_settlement`) are optional; no existing field changes
 semantics. Clients without extension support ignore the new properties.
 
 ---
@@ -510,6 +568,7 @@ semantics. Clients without extension support ignore the new properties.
 - [ ] Returns `providers`, `policy_url`, `fee`, `window_days`
 - [ ] Executes `overturn` amounts as a refund against `payment_receipt.payment_id`
 - [ ] Records the determination as an `Adjustment` of type `dispute`, status `completed`
+- [ ] Records a settlement the same way, with `dispute_settlement` instead of `dispute_determination` (Section 6)
 
 **Agent platform**
 
@@ -526,6 +585,7 @@ semantics. Clients without extension support ignore the new properties.
 - [ ] For a delivery receipt, recomputes the receipt identifier, verifies both signatures (rejecting small-order keys), checks that `agent_a` is the buyer in the dispute, checks both digests against the presented bytes, and records who presented them (Section 7.4a, requirement 6)
 - [ ] For order-placement evidence, resolves the named execution record, recomputes its committed hash and finds the placing call in it, or records `none` and rests no ground on an execution record (Section 7.4a, requirement 7)
 - [ ] Applies the decision rule of Section 7.4 and the clocks of Section 7.5
+- [ ] If it offers a settlement stage, lets either party decline it, ends it within 10 days of `opened_at`, authenticates each acceptance, issues a DisputeSettlement only when both parties accepted the same `terms_digest`, keeps declines, offers and confidential limits from the signer of any later determination, and never presents a settlement as a determination (Section 5.4)
 - [ ] Meets Sections 7.7 to 7.10
 
 ---
@@ -586,6 +646,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-11-02**: Section 7.4a requirement 6: delivery receipts (signed request and response digests) weigh against a non-delivery or wrong-content claim only when countersigned by the buyer and matching the presented bytes; a seller-only receipt decides nothing; small-order keys are rejected (from hheskihoran in #304; vectors in inamprotocol/inam-protocol `interop/delivery`).
 - **2026-11-22**: Section 7.4a: row for an anchor whose time-stamp authority signature was not verified under a provider-chosen certificate (attests no time, even when `valid: true`); requirement 1 names the certificate; field names follow the receipt's nested members; the determination records `tsa_cert_sha256` (ap2-evidence-pack 1.10.0; from robertolocatelli81-dev in #304).
 - **2026-11-22**: Section 7.4a requirement 7: order-placement evidence names its execution record by reference and committed hash, or `none`; `none` is a claim checked and recorded separately from its outcome; a link written after the dispute opened weighs as the presenter's statement (from Flyingmiata-droid and zambodotdev in #304).
+- **2026-11-23**: Section 5.4 optional settlement stage before a determination, on the same record; Section 4.6 `DisputeSettlement` and the `Adjustment.dispute_settlement` property; a settlement records no finding and is never presented as a determination; both acceptances name the same terms digest; declines and confidential limits are kept from a later determination; fee disposition in Section 7.6, clocks in Section 7.5, settlement share in Section 7.10 (from trucehq in #304).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---

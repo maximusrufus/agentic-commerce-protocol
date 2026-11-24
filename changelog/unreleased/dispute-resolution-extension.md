@@ -5,10 +5,10 @@ Add the optional `dispute_resolution` extension (ATDRP): merchants and agents ag
 ### Changes
 
 - **New RFC**: `rfcs/rfc.dispute_resolution.md` (extension declaration, schema, policy ATDRP-0.1, open questions, Appendix C card-rail mapping)
-- **New schema**: `schema.dispute_resolution.json` with `DisputeAmount`, `DisputeProviderRef`, `DisputeResolution`, `DisputeResolutionRequest`, `UserApproval`, `DisputeClaim`, `DisputeRecord`, `DisputeDeterminationLine`, `DisputeDetermination`
+- **New schema**: `schema.dispute_resolution.json` with `DisputeAmount`, `DisputeProviderRef`, `DisputeResolution`, `DisputeResolutionRequest`, `UserApproval`, `DisputeClaim`, `DisputeRecord`, `DisputeDeterminationLine`, `DisputeDetermination`, `DisputeSettlementLine`, `DisputeSettlement`
 - **CheckoutSession**: Added optional `dispute_resolution`
 - **CheckoutSessionCompleteRequest**: Added optional `dispute_resolution` (`selected_provider`, optional `approval_digest` binding what the user approved)
-- **Adjustment**: Added optional `dispute_determination`
+- **Adjustment**: Added optional `dispute_determination` and `dispute_settlement` (an optional settlement stage before a determination; a settlement records no finding)
 - **Examples**: Added `examples.dispute_resolution.json` and three dispute examples in `examples.agentic_checkout.json`
 - **Validation**: `scripts/validate-consistency.js` now validates the `dispute_resolution` examples against their schemas
 

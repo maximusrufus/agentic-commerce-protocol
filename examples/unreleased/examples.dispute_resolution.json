@@ -210,5 +210,39 @@
         "currency": "usd"
       }
     }
+  },
+  "dispute_settlement": {
+    "settlement_id": "stl_0001",
+    "dispute_id": "dsp_0001",
+    "per_line": [
+      {
+        "line_id": "li_1",
+        "amount": {
+          "amount": 2250,
+          "currency": "usd"
+        }
+      }
+    ],
+    "fee_disposition": {
+      "paid_by": "split",
+      "amount": {
+        "amount": 500,
+        "currency": "usd"
+      }
+    },
+    "terms_digest": "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f",
+    "accepted_by": [
+      {
+        "party": "payer",
+        "accepted_at": "2026-11-14T10:00:00Z",
+        "terms_digest": "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f"
+      },
+      {
+        "party": "merchant",
+        "accepted_at": "2026-11-14T11:30:00Z",
+        "terms_digest": "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f"
+      }
+    ],
+    "issued_at": "2026-11-14T11:31:00Z"
   }
 }

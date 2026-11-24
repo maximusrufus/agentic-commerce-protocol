@@ -2494,6 +2494,9 @@ components:
         dispute_determination:
           $ref: "#/components/schemas/DisputeDetermination"
           description: "Dispute resolution extension: the provider determination recorded by this adjustment. Present when type is 'dispute' and the 'dispute_resolution' extension produced it."
+        dispute_settlement:
+          $ref: "#/components/schemas/DisputeSettlement"
+          description: "Dispute resolution extension: the settlement recorded by this adjustment, when the parties agreed before a determination. Never present together with dispute_determination."
         id:
           type: string
           description: Adjustment identifier
@@ -3234,6 +3237,139 @@ components:
           amount:
             amount: 500
             currency: usd
+    DisputeSettlementLine:
+      type: object
+      additionalProperties: false
+      description: The agreed refund for a single order line.
+      properties:
+        line_id:
+          type: string
+          description: Identifier of the order line item.
+        amount:
+          $ref: "#/components/schemas/DisputeAmount"
+          description: Amount refunded to the payer for the line (zero if none).
+      required:
+        - line_id
+        - amount
+      example:
+        line_id: li_1
+        amount:
+          amount: 2250
+          currency: usd
+    DisputeSettlement:
+      type: object
+      additionalProperties: false
+      description: "Settlement returned by the provider when both parties accept the same terms in the optional settlement stage. It records an agreement, not a finding: no reasons, factors or seal. The merchant records it as an Order adjustment of type 'dispute'."
+      properties:
+        settlement_id:
+          type: string
+          description: Identifier of the settlement.
+        dispute_id:
+          type: string
+          description: Identifier of the dispute the settlement closes.
+        per_line:
+          type: array
+          items:
+            $ref: "#/components/schemas/DisputeSettlementLine"
+          description: Per-line agreed refunds.
+        terms:
+          type: string
+          description: Any other agreed terms, as accepted.
+        fee_disposition:
+          type: object
+          additionalProperties: false
+          description: Fee disposition the parties accepted; a settlement has no losing party.
+          properties:
+            paid_by:
+              type: string
+              description: Who pays the provider's fee.
+              enum:
+                - payer
+                - merchant
+                - split
+            amount:
+              $ref: "#/components/schemas/DisputeAmount"
+              description: Fee amount.
+          required:
+            - paid_by
+            - amount
+        terms_digest:
+          type: string
+          pattern: "^sha256:[0-9a-f]{64}$"
+          description: "'sha256:' and the lowercase hex SHA-256 of the RFC 8785 (JCS) serialization of the object with members dispute_id, per_line, terms (if present) and fee_disposition."
+        accepted_by:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: object
+            additionalProperties: false
+            description: One party's acceptance of the settlement terms.
+            properties:
+              party:
+                type: string
+                enum:
+                  - payer
+                  - merchant
+                description: The accepting party.
+              accepted_at:
+                type: string
+                format: date-time
+                description: RFC 3339 time the party accepted.
+              terms_digest:
+                type: string
+                pattern: "^sha256:[0-9a-f]{64}$"
+                description: Digest of the terms this party accepted; equal to the settlement's terms_digest.
+            required:
+              - party
+              - accepted_at
+              - terms_digest
+          allOf:
+            - contains:
+                type: object
+                properties:
+                  party:
+                    const: payer
+            - contains:
+                type: object
+                properties:
+                  party:
+                    const: merchant
+          description: Exactly one acceptance from the payer and one from the merchant.
+        issued_at:
+          type: string
+          format: date-time
+          description: RFC 3339 time the provider issued the settlement.
+      required:
+        - settlement_id
+        - dispute_id
+        - per_line
+        - fee_disposition
+        - terms_digest
+        - accepted_by
+        - issued_at
+      example:
+        settlement_id: stl_0001
+        dispute_id: dsp_0001
+        per_line:
+          - line_id: li_1
+            amount:
+              amount: 2250
+              currency: usd
+        fee_disposition:
+          paid_by: split
+          amount:
+            amount: 500
+            currency: usd
+        terms_digest: "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f"
+        accepted_by:
+          - party: payer
+            accepted_at: "2026-11-14T10:00:00Z"
+            terms_digest: "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f"
+          - party: merchant
+            accepted_at: "2026-11-14T11:30:00Z"
+            terms_digest: "sha256:8610f7d06be9cfdf7523045d8dcdfe4efa8a1afc02b33da5ca4830f07c536c8f"
+        issued_at: "2026-11-14T11:31:00Z"
     PaymentResponse:
       type: object
       additionalProperties: false

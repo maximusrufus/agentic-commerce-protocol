@@ -597,6 +597,8 @@ function validateExamples() {
               schemaRef = '#/$defs/DisputeRecord';
             } else if (exampleName === 'dispute_determination') {
               schemaRef = '#/$defs/DisputeDetermination';
+            } else if (exampleName === 'dispute_settlement') {
+              schemaRef = '#/$defs/DisputeSettlement';
             }
           } else if (spec === 'delegate_payment') {
             if (exampleName === 'delegate_payment_request') {
