@@ -148,6 +148,7 @@ binds what the user approved to the checkout.
 |-------|------|----------|-------------|
 | `dispute_id` | string | Yes | Dispute identifier |
 | `policy_version` | string | Yes | Policy version, e.g. `ATDRP-0.1` |
+| `currency` | string | No | Currency of the payment, ISO 4217, lowercase. When present, every `DisputeAmount` in a determination or settlement on this record uses it; when absent, the provider takes it from the agreed checkout session |
 | `claimant` | string | Yes | `payer` or `merchant` |
 | `checkout_hash` | string | Yes | AP2 `checkout_mandate.checkout_hash` |
 | `payment_mandate` | object | Yes | AP2 payment mandate: `transaction_id`, `payee`, `payment_amount`, `iat`, `exp`, `execution_date`, `risk_data` |
@@ -182,7 +183,10 @@ The agent sends `approval_digest` on `CheckoutSessionCompleteRequest.dispute_res
 (Section 4.3), so the merchant's record of the session holds it before any
 dispute exists. A provider **MUST** recompute the digest from `items` and
 `approved_at`, and **MUST** check it equals the `approval_digest` the merchant
-received on complete. Only a `user_approval` that passes both checks is
+received on complete. The second check is against the merchant's record of the
+complete request, not against the `approval_digest` inside the presented
+`user_approval`: an approval whose digest recomputes correctly but differs from
+the one received on complete fails. Only a `user_approval` that passes both checks is
 evidence of what the user approved; otherwise it, like `user_instruction`, is a
 statement of the agent platform only. `user_approval` carries no customer
 details: product identifiers, quantities and a time.
@@ -335,7 +339,10 @@ Per line:
    compared with `payment_amount`. Execution is after `exp` when the UTC date of
    `execution_date` is later than the UTC date of `exp`; the same day is not after.
 3. Merchant `canceled` without a completed adjustment of a type counted in rule 1:
-   **overturn**. Unfulfilled units after the merchant's own `estimated_delivery`:
+   **overturn**. Any completed adjustment of a counted type that applies to the
+   line, line-labelled or order-level, defeats this branch, even when its
+   allocated amount is less than the line amount; adjustments of other types do
+   not. Unfulfilled units after the merchant's own `estimated_delivery`:
    **overturn** the unfulfilled share. Unfulfilled is `quantity.current` (else `quantity.ordered`)
    minus `quantity.fulfilled`, assessed after the order's
    `estimated_delivery.latest`; a fulfillment's own estimate does not extend it.
@@ -647,6 +654,7 @@ These points are underspecified in SEP #303. This RFC does not decide them.
 - **2026-11-22**: Section 7.4a: row for an anchor whose time-stamp authority signature was not verified under a provider-chosen certificate (attests no time, even when `valid: true`); requirement 1 names the certificate; field names follow the receipt's nested members; the determination records `tsa_cert_sha256` (ap2-evidence-pack 1.10.0; from robertolocatelli81-dev in #304).
 - **2026-11-22**: Section 7.4a requirement 7: order-placement evidence names its execution record by reference and committed hash, or `none`; `none` is a claim checked and recorded separately from its outcome; a link written after the dispute opened weighs as the presenter's statement (from Flyingmiata-droid and zambodotdev in #304).
 - **2026-11-23**: Section 5.4 optional settlement stage before a determination, on the same record; Section 4.6 `DisputeSettlement` and the `Adjustment.dispute_settlement` property; a settlement records no finding and is never presented as a determination; both acceptances name the same terms digest; declines and confidential limits are kept from a later determination; fee disposition in Section 7.6, clocks in Section 7.5, settlement share in Section 7.10 (from trucehq in #304).
+- **2026-11-24**: Section 4.4: optional `DisputeRecord.currency`, which fixes the currency of every amount in a determination or settlement on the record (from trucehq's implementation in #304). Section 7.4(3): which adjustments defeat the canceled branch. Section 4.4a: the approval digest is checked against the one received on complete, not the presented one (from nmatt1's independent implementation in #316).
 - **2026-10-21**: Section 4.4a `UserApproval` and `approval_digest` on complete: what the user approved is bound to the checkout, so an approved-green, ordered-black case is decided on evidence (case from the discussion in #304).
 
 ---

@@ -258,6 +258,11 @@
           "type": "string",
           "description": "Policy version the dispute is opened under (e.g. 'ATDRP-0.1')."
         },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$",
+          "description": "Currency of the payment, ISO 4217, lowercase. When present, every DisputeAmount in a determination or settlement on this record uses it; when absent, the provider takes it from the agreed checkout session."
+        },
         "claimant": {
           "type": "string",
           "description": "Party opening the dispute.",

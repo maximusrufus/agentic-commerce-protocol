@@ -47,6 +47,7 @@
   "dispute_record": {
     "dispute_id": "dsp_0001",
     "policy_version": "ATDRP-0.1",
+    "currency": "usd",
     "claimant": "payer",
     "checkout_hash": "h_7f3a",
     "payment_mandate": {
